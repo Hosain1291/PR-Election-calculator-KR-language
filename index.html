@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>비례대표 의석수 계산기</title>
-     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@700&display=swap" rel="stylesheet"> <!-- 웹폰트 추가 -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,7 +14,7 @@
         }
 
         body {
-            font-family: 'ibm plex sans kr', sans-serif; /* 웹폰트 사용 */
+            font-family: 'IBM Plex Sans KR', sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             padding: 40px 20px;
@@ -155,23 +156,10 @@
 
         .result {
             margin-top: 30px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
-            gap: 8px;
             padding: 20px;
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .square {
-            aspect-ratio: 1;
-            border-radius: 6px;
-            transition: transform 0.3s ease;
-        }
-
-        .square:hover {
-            transform: scale(1.1);
         }
 
         .results-summary {
@@ -188,6 +176,12 @@
             align-items: center;
             padding: 10px;
             border-bottom: 1px solid #eee;
+        }
+
+        #chart-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
         @media (max-width: 600px) {
@@ -243,7 +237,11 @@
         </div>
 
         <div class="parties-list" id="parties"></div>
-        <div class="result" id="result"></div>
+        <div class="result" id="result">
+            <div id="chart-container">
+                <canvas id="semiDonutChart"></canvas>
+            </div>
+        </div>
         <div class="results-summary" id="summary"></div>
     </div>
 
@@ -252,6 +250,7 @@
         let parties = [];
         let blockingThreshold = 0;
         let selectedMethod = 'dhondt';
+        let chart = null;
 
         // 계산 방식 선택 버튼 이벤트
         document.querySelectorAll('.method-btn').forEach(button => {
@@ -394,9 +393,7 @@
 
         function calculateSeats() {
             const totalVotes = parties.reduce((sum, party) => sum + party.votes, 0);
-            const resultDiv = document.getElementById('result');
             const summaryDiv = document.getElementById('summary');
-            resultDiv.innerHTML = '';
             summaryDiv.innerHTML = '';
 
             if (totalVotes > 0 && totalSeats > 0) {
@@ -431,16 +428,21 @@
                     partySeats.set(party, (partySeats.get(party) || 0) + 1);
                 });
 
-                partySeats.forEach((seats, party) => {
-                    for (let i = 0; i < seats; i++) {
-                        const square = document.createElement('div');
-                        square.className = 'square';
-                        square.style.backgroundColor = party.color;
-                        square.title = `${party.name}: ${seats}석`;
-                        resultDiv.appendChild(square);
-                    }
+                const chartData = {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [],
+                        borderWidth: 0
+                    }]
+                };
 
+                partySeats.forEach((seats, party) => {
                     const percentage = ((party.votes / totalVotes) * 100).toFixed(1);
+                    chartData.labels.push(party.name);
+                    chartData.datasets[0].data.push(seats);
+                    chartData.datasets[0].backgroundColor.push(party.color);
+
                     const resultSummary = document.createElement('div');
                     resultSummary.className = 'party-result';
                     resultSummary.innerHTML = `
@@ -449,9 +451,47 @@
                     `;
                     summaryDiv.appendChild(resultSummary);
                 });
+
+                updateChart(chartData);
             } else {
-                resultDiv.innerHTML = '<p>데이터가 없으니 다시!</p>';
+                summaryDiv.innerHTML = '<p>데이터가 없으니 다시!</p>';
             }
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('semiDonutChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    circumference: 180,
+                    rotation: -90,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const dataset = context.dataset;
+                                    const total = dataset.data.reduce((acc, data) => acc + data, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value}석 (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
     </script>
 </body>
