@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>비례대표 의석수 계산기</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@700&display=swap" rel="stylesheet">
+  
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @font-face {
+            font-family: 'YESMyoungjo-Bold';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_13@1.0/YESMyoungjo-Bold.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,7 +21,7 @@
         }
 
         body {
-            font-family: 'IBM Plex Sans KR', sans-serif;
+            font-family: 'YESMyoungjo-Bold', sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             padding: 40px 20px;
@@ -208,7 +215,7 @@
             <button class="method-btn" data-method="hagenbach">하겐바흐-비스초프 방식</button>
             <button class="method-btn" data-method="largest-remainder">최대 나머지 방식</button>
             <button class="method-btn" data-method="hare">헤어 쿼터</button>
-            <button class="method-btn" data-method="sainte-lague">생트라귀 방식</button>
+            <button class="method-btn" data-method="sainte-lague">생트라귀 방</button>
             <button class="method-btn" data-method="imperiali">임페리알리 쿼터 방식</button>
         </div>
         
