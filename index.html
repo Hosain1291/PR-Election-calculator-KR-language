@@ -327,7 +327,39 @@
                 party.color = color;
             }
         }
+function renderParties() {
+    const partiesDiv = document.getElementById('parties');
+    partiesDiv.innerHTML = '';
 
+    parties.forEach((party) => {
+        const partyDiv = document.createElement('div');
+        partyDiv.className = 'party-item';
+        partyDiv.innerHTML = `
+            <input type="text" value="${party.name}" readonly>
+            <input type="number" value="${party.votes}" onchange="updateVotes('${party.name}', this.value)">
+            <input type="color" value="${party.color}" onchange="updateColor('${party.name}', this.value)">
+            <button onclick="removeParty('${party.name}')" style="
+                background-color: #dc3545; 
+                color: white; 
+                border: none; 
+                padding: 5px 10px; 
+                border-radius: 5px;
+                cursor: pointer;
+            ">X</button>
+        `;
+        partiesDiv.appendChild(partyDiv);
+    });
+}
+
+function removeParty(partyName) {
+    parties = parties.filter(party => party.name !== partyName);
+    renderParties();
+    
+    // 의석 재계산 (선택사항)
+    if (parties.length > 0) {
+        calculateSeats();
+    }
+}
         function calculateDHondt(validParties, totalSeats) {
             const quotients = [];
             validParties.forEach(party => {
