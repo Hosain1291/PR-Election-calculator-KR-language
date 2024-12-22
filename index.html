@@ -230,9 +230,16 @@
                 <input type="number" id="partyVotes" placeholder="득표수">
                 <input type="color" id="partyColor" value="#4a90e2">
             </div>
-            <div class="button-group">
-                <button class="primary-btn" onclick="addParty()">정당 추가</button>
-                <button class="secondary-btn" onclick="calculateSeats()">의석 계산</button>
+<div class="button-group">
+    <button class="primary-btn" onclick="addParty()">정당 추가</button>
+    <button class="secondary-btn" onclick="calculateSeats()">의석 계산</button>
+    
+    <!-- 여기에 새로운 버튼들 추가 -->
+    <button class="secondary-btn" onclick="saveData()">로컬 저장</button>
+    <button class="secondary-btn" onclick="loadData()">로컬 불러오기</button>
+    <button class="secondary-btn" onclick="exportToTxt()">txt 내보내기</button>
+    <input type="file" id="txtImportInput" style="display:none;" accept=".txt" onchange="importFromTxt(event)">
+    <button class="secondary-btn" onclick="document.getElementById('txtImportInput').click()">txt 불러오기</button>
             </div>
         </div>
 
@@ -493,6 +500,100 @@
                 }
             });
         }
+        function saveData() {
+    const dataToSave = {
+        parties: parties,
+        totalSeats: totalSeats,
+        blockingThreshold: blockingThreshold,
+        selectedMethod: selectedMethod
+    };
+    localStorage.setItem('proportionalRepresentationData', JSON.stringify(dataToSave));
+    alert('데이터가 성공적으로 저장되었습니다!');
+}
+
+function loadData() {
+    const savedData = localStorage.getItem('proportionalRepresentationData');
+    if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        parties = parsedData.parties;
+        totalSeats = parsedData.totalSeats;
+        blockingThreshold = parsedData.blockingThreshold;
+        selectedMethod = parsedData.selectedMethod;
+
+        // UI 업데이트
+        document.getElementById('totalSeats').value = totalSeats;
+        document.getElementById('blockingThreshold').value = blockingThreshold;
+        
+        // 메서드 버튼 활성화
+        document.querySelectorAll('.method-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.method === selectedMethod) {
+                btn.classList.add('active');
+            }
+        });
+
+        renderParties();
+        calculateSeats();
+    } else {
+        alert('저장된 데이터가 없습니다.');
+    }
+}
+
+function exportToTxt() {
+    const dataToExport = {
+        parties: parties,
+        totalSeats: totalSeats,
+        blockingThreshold: blockingThreshold,
+        selectedMethod: selectedMethod
+    };
+
+    const txtContent = JSON.stringify(dataToExport, null, 2);
+    const blob = new Blob([txtContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'proportional_representation_data.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importFromTxt(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                parties = importedData.parties;
+                totalSeats = importedData.totalSeats;
+                blockingThreshold = importedData.blockingThreshold;
+                selectedMethod = importedData.selectedMethod;
+
+                // UI 업데이트
+                document.getElementById('totalSeats').value = totalSeats;
+                document.getElementById('blockingThreshold').value = blockingThreshold;
+                
+                // 메서드 버튼 활성화
+                document.querySelectorAll('.method-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.method === selectedMethod) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                renderParties();
+                calculateSeats();
+                
+                alert('데이터가 성공적으로 불러와졌습니다!');
+            } catch (error) {
+                alert('유효하지 않은 파일입니다.');
+            }
+        };
+        reader.readAsText(file);
+    }
+}
     </script>
 </body>
 </html>
