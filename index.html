@@ -215,7 +215,7 @@
             <button class="method-btn" data-method="hagenbach">하겐바흐-비스초프 방식</button>
             <button class="method-btn" data-method="largest-remainder">최대 나머지 방식</button>
             <button class="method-btn" data-method="hare">헤어 쿼터</button>
-            <button class="method-btn" data-method="sainte-lague">생트라귀 방</button>
+            <button class="method-btn" data-method="sainte-lague">생트라귀 방식</button>
             <button class="method-btn" data-method="imperiali">임페리알리 쿼터 방식</button>
         </div>
         
@@ -227,8 +227,17 @@
             <div class="input-group">
                 <label for="totalSeats">총 의석수</label>
                 <input type="number" id="totalSeats" placeholder="예: 47" min="1">
-            </div>
-        </div>
+    </div>
+    <div class="input-group">
+        <label for="voterCount">유권자 수</label>
+        <input type="number" id="voterCount" placeholder="예: 1000" min="1" oninput="updateVoterTurnout()">
+    </div>
+    <div class="input-group">
+        <label for="voterTurnout">투표율 (%)</label>
+        <input type="text" id="voterTurnout" placeholder="투표율" readonly>
+    </div>
+</div>
+
 
         <div class="input-group">
             <label>정당 추가</label>
@@ -437,15 +446,29 @@ function removeParty(partyName) {
             return results;
         }
 
-        function calculateSeats() {
-            const totalVotes = parties.reduce((sum, party) => sum + party.votes, 0);
-            const summaryDiv = document.getElementById('summary');
-            summaryDiv.innerHTML = '';
+        function updateVoterTurnout() {
+    const totalVotes = parties.reduce((sum, party) => sum + party.votes, 0); // 총 투표수 계산
+    const voterCount = parseInt(document.getElementById('voterCount').value) || 0;
 
-            if (totalVotes > 0 && totalSeats > 0) {
-                const validParties = parties.filter(party => 
-                    (party.votes / totalVotes) * 100 >= blockingThreshold
-                );
+    // 투표율 계산
+    const voterTurnout = voterCount > 0 ? Math.floor((totalVotes / voterCount) * 100) : 0;
+    document.getElementById('voterTurnout').value = voterTurnout;
+}
+
+function calculateSeats() {
+    const voterCount = parseInt(document.getElementById('voterCount').value) || 0;
+
+    const totalVotes = parties.reduce((sum, party) => sum + party.votes, 0); // 총 투표수 계산
+    const summaryDiv = document.getElementById('summary');
+    summaryDiv.innerHTML = '';
+
+    // 투표율 자동 업데이트
+    updateVoterTurnout();
+
+    if (totalVotes > 0 && totalSeats > 0) {
+        const validParties = parties.filter(party => 
+            (party.votes / totalVotes) * 100 >= blockingThreshold
+        );
 
                 let results;
                 switch(selectedMethod) {
