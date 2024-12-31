@@ -351,7 +351,7 @@ function renderParties() {
         const partyDiv = document.createElement('div');
         partyDiv.className = 'party-item';
         partyDiv.innerHTML = `
-            <input type="text" value="${party.name}" readonly>
+            <input type="text" value="${party.name}" onchange="updatePartyName('${party.name}', this.value)">
             <input type="number" value="${party.votes}" onchange="updateVotes('${party.name}', this.value)">
             <input type="color" value="${party.color}" onchange="updateColor('${party.name}', this.value)">
             <button onclick="removeParty('${party.name}')" style="
@@ -654,6 +654,27 @@ function importFromTxt(event) {
             }
         };
         reader.readAsText(file);
+    }
+}
+function updatePartyName(oldName, newName) {
+    const party = parties.find(p => p.name === oldName);
+    if (party && newName.trim() !== '') {
+        // 중복 이름 체크
+        const isDuplicate = parties.some(p => p.name === newName && p !== party);
+        if (isDuplicate) {
+            alert('이미 존재하는 정당 이름입니다.');
+            renderParties(); // 원래 이름으로 되돌리기
+            return;
+        }
+        
+        party.name = newName;
+        // 변경 후 차트와 결과 업데이트
+        if (parties.length > 0) {
+            calculateSeats();
+        }
+    } else if (newName.trim() === '') {
+        alert('정당 이름은 비워둘 수 없습니다.');
+        renderParties(); // 원래 이름으로 되돌리기
     }
 }
     </script>
