@@ -347,15 +347,11 @@ function renderParties() {
     const partiesDiv = document.getElementById('parties');
     partiesDiv.innerHTML = '';
 
-function renderParties() {
-    const partiesDiv = document.getElementById('parties');
-    partiesDiv.innerHTML = '';
-
     parties.forEach((party) => {
         const partyDiv = document.createElement('div');
         partyDiv.className = 'party-item';
         partyDiv.innerHTML = `
-            <input type="text" value="${party.name}" onchange="updatePartyName('${party.name}', this.value)">
+            <input type="text" value="${party.name}" readonly>
             <input type="number" value="${party.votes}" onchange="updateVotes('${party.name}', this.value)">
             <input type="color" value="${party.color}" onchange="updateColor('${party.name}', this.value)">
             <button onclick="removeParty('${party.name}')" style="
@@ -658,16 +654,6 @@ function importFromTxt(event) {
             }
         };
         reader.readAsText(file);
-    }
-}
-function updatePartyName(oldName, newName) {
-    const party = parties.find(p => p.name === oldName);
-    if (party) {
-        party.name = newName;
-        // 의석 재계산 (선택사항)
-        if (parties.length > 0) {
-            calculateSeats();
-        }
     }
 }
     </script>
